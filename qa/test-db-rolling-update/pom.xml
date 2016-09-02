@@ -14,6 +14,7 @@
   </parent>
 
   <modules>
+    <module>rolling-update-util</module>
     <module>create-old-engine</module>
     <module>test-new-engine</module>
     <module>test-old-engine</module>
@@ -23,7 +24,7 @@
       <plugins>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
-          <artifactId>sql-maven-plugin</artifactId>       
+          <artifactId>sql-maven-plugin</artifactId>
           <configuration>
             <keepFormat>false</keepFormat>
           </configuration>

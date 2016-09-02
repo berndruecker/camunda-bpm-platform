@@ -36,18 +36,23 @@ import org.camunda.bpm.qa.upgrade.ScenarioRunner;
  */
 public class TestFixture {
 
-  public static final String ENGINE_VERSION = "7.5.0";
+  public static final String DEFAULT_TAG = "7.5.0";
 
   public TestFixture(ProcessEngine processEngine) {
   }
 
   public static void main(String[] args) {
+    String tag = DEFAULT_TAG;
+    if (args.length > 0) {
+      tag = args[0];
+    }
+
     ProcessEngineConfigurationImpl processEngineConfiguration = (ProcessEngineConfigurationImpl) ProcessEngineConfiguration
       .createProcessEngineConfigurationFromResource("camunda.cfg.xml");
     ProcessEngine processEngine = processEngineConfiguration.buildProcessEngine();
 
     // register test scenarios
-    ScenarioRunner runner = new ScenarioRunner(processEngine, ENGINE_VERSION);
+    ScenarioRunner runner = new ScenarioRunner(processEngine, tag);
     // compensation
     //rolling upgrade test scenarios
     runner.setupScenarios(ProcessWithUserTaskScenario.class);
