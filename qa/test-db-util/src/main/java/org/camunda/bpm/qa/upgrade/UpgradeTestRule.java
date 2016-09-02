@@ -35,6 +35,7 @@ public class UpgradeTestRule extends ProcessEngineRule {
 
   protected String scenarioTestedByClass = null;
   protected String scenarioName;
+  protected String tag;
 
   public UpgradeTestRule() {
     super("camunda.cfg.xml");
@@ -44,6 +45,7 @@ public class UpgradeTestRule extends ProcessEngineRule {
     super(configurationResource);
   }
 
+  @Override
   public void starting(Description description) {
     Class<?> testClass = description.getTestClass();
     if (scenarioTestedByClass == null) {
@@ -57,8 +59,7 @@ public class UpgradeTestRule extends ProcessEngineRule {
     if (testScenarioAnnotation != null) {
       if (scenarioTestedByClass != null) {
         scenarioName = scenarioTestedByClass + "." + testScenarioAnnotation.value();
-      }
-      else {
+      } else {
         scenarioName = testScenarioAnnotation.value();
       }
     }
@@ -70,7 +71,7 @@ public class UpgradeTestRule extends ProcessEngineRule {
     }
 
     if (originAnnotation != null) {
-      scenarioName = originAnnotation.value() + "." + scenarioName;
+      tag = originAnnotation.value();
     }
 
     if (scenarioName == null) {
@@ -81,11 +82,11 @@ public class UpgradeTestRule extends ProcessEngineRule {
   }
 
   public TaskQuery taskQuery() {
-    return taskService.createTaskQuery().processInstanceBusinessKey(scenarioName);
+    return taskService.createTaskQuery().processInstanceBusinessKey(getBuisnessKey());
   }
 
   public ExecutionQuery executionQuery() {
-    return runtimeService.createExecutionQuery().processInstanceBusinessKey(scenarioName);
+    return runtimeService.createExecutionQuery().processInstanceBusinessKey(getBuisnessKey());
   }
 
   public JobQuery jobQuery() {
@@ -96,20 +97,20 @@ public class UpgradeTestRule extends ProcessEngineRule {
   public JobDefinitionQuery jobDefinitionQuery() {
     ProcessInstance instance = processInstance();
     return managementService.createJobDefinitionQuery()
-        .processDefinitionId(instance.getProcessDefinitionId());
+            .processDefinitionId(instance.getProcessDefinitionId());
   }
 
   public ProcessInstanceQuery processInstanceQuery() {
     return runtimeService
-        .createProcessInstanceQuery()
-        .processInstanceBusinessKey(scenarioName);
+            .createProcessInstanceQuery()
+            .processInstanceBusinessKey(getBuisnessKey());
   }
 
   public ProcessInstance processInstance() {
     ProcessInstance instance = processInstanceQuery().singleResult();
 
     if (instance == null) {
-      throw new RuntimeException("There is no process instance for scenario " + scenarioName);
+      throw new RuntimeException("There is no process instance for scenario " + getBuisnessKey());
     }
 
     return instance;
@@ -117,45 +118,44 @@ public class UpgradeTestRule extends ProcessEngineRule {
 
   public HistoricProcessInstance historicProcessInstance() {
     HistoricProcessInstance historicProcessInstance = historyService
-      .createHistoricProcessInstanceQuery()
-      .processInstanceBusinessKey(scenarioName)
-      .singleResult();
+            .createHistoricProcessInstanceQuery()
+            .processInstanceBusinessKey(getBuisnessKey())
+            .singleResult();
 
     if (historicProcessInstance == null) {
-      throw new RuntimeException("There is no historic process instance for scenario " + scenarioName);
+      throw new RuntimeException("There is no historic process instance for scenario " + getBuisnessKey());
     }
 
     return historicProcessInstance;
   }
 
   public MessageCorrelationBuilder messageCorrelation(String messageName) {
-    return runtimeService.createMessageCorrelation(messageName).processInstanceBusinessKey(scenarioName);
+    return runtimeService.createMessageCorrelation(messageName).processInstanceBusinessKey(getBuisnessKey());
   }
 
   public void assertScenarioEnded() {
-    Assert.assertTrue("Process instance for scenario " + scenarioName + " should have ended",
-        processInstanceQuery().singleResult() == null);
+    Assert.assertTrue("Process instance for scenario " + getBuisnessKey() + " should have ended",
+            processInstanceQuery().singleResult() == null);
   }
 
   // case //////////////////////////////////////////////////
-
   public CaseInstanceQuery caseInstanceQuery() {
     return caseService
-        .createCaseInstanceQuery()
-        .caseInstanceBusinessKey(scenarioName);
+            .createCaseInstanceQuery()
+            .caseInstanceBusinessKey(getBuisnessKey());
   }
 
   public CaseExecutionQuery caseExecutionQuery() {
     return caseService
-        .createCaseExecutionQuery()
-        .caseInstanceBusinessKey(scenarioName);
+            .createCaseExecutionQuery()
+            .caseInstanceBusinessKey(getBuisnessKey());
   }
 
   public CaseInstance caseInstance() {
     CaseInstance instance = caseInstanceQuery().singleResult();
 
     if (instance == null) {
-      throw new RuntimeException("There is no case instance for scenario " + scenarioName);
+      throw new RuntimeException("There is no case instance for scenario " + getBuisnessKey());
     }
 
     return instance;
@@ -163,6 +163,21 @@ public class UpgradeTestRule extends ProcessEngineRule {
 
   public String getScenarioName() {
     return scenarioName;
+  }
+
+  public String getBuisnessKey() {
+    if (tag != null) {
+      return tag + '.' + scenarioName;
+    }
+    return scenarioName;
+  }
+
+  public String getTag() {
+    return tag;
+  }
+
+  public void setTag(String tag) {
+    this.tag = tag;
   }
 
 }
