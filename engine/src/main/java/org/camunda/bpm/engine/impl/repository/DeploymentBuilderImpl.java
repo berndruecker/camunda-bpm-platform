@@ -85,7 +85,7 @@ public class DeploymentBuilderImpl implements DeploymentBuilder, Serializable {
     ensureNotNull("text", text);
     ResourceEntity resource = new ResourceEntity();
     resource.setName(resourceName);
-    resource.setBytes(text.getBytes());
+    resource.setBytes(text.getBytes("UTF-8"));
     deployment.addResource(resource);
     return this;
   }
